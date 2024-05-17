@@ -1,129 +1,87 @@
+document.addEventListener('DOMContentLoaded', function () {
+    const productForm = document.getElementById('productForm');
+    const categoryDropdown = document.getElementById('category');
 
-document.addEventListener('DOMContentLoaded', () => {
-    initializeLogoutButton();
-    populateCategoryDropdown();
-    initializeProductForm();
-});
-
-
-function initializeLogoutButton() {
-    const logoutButton = document.getElementById("Logout");
-    if (logoutButton) {
-        logoutButton.addEventListener("click", handleLogout);
-    }
-}
-// logout
-function handleLogout() {
-    localStorage.removeItem("isLoggedIn");
-    window.location.href = "../index.html";
-}
-
-// get the category
-function categoryDropdown() {
-    const categoryNameDropdown = document.getElementById('category');
-    const categories = JSON.parse(localStorage.getItem('categories')) || [];
-
-    categories.forEach(category => {
+    // Populate categories from local storage
+    let categories = JSON.parse(localStorage.getItem('categories')) || [];
+    categories.forEach(function (category) {
         const option = document.createElement('option');
         option.value = category.name;
         option.textContent = category.name;
-        categoryNameDropdown.appendChild(option);
+        categoryDropdown.appendChild(option);
     });
-}
-// initilizing product form
 
-function initializeProductForm() {
-    const productForm = document.getElementById('productForm');
+    productForm.addEventListener('submit', function (event) {
+        event.preventDefault();
 
-    if (productForm) {
-        productForm.addEventListener('submit', handleProductFormSubmit);
-    }
-}
-// submit product form
-function productFormSubmit(event) {
-    event.preventDefault();
+        const productName = document.getElementById('productName').value;
+        const productDescription = document.getElementById('description').value;
+        const productPrice = document.getElementById('price').value;
+        const productSKU = document.getElementById('suk').value;
+        const productQuantity = document.getElementById('quantity').value;
+        const selectedCategory = categoryDropdown.value;
 
-    const formData = getProductFormData();
-    if (!validateFormData(formData)) return;
+        let valid = true;
 
-    saveProduct(formData);
-    productForm.reset();
-    window.location.href = "homePage.html";
-}
+        if (productName === "") {
+            document.getElementById('span1').textContent = "Please enter a product name.";
+            valid = false;
+        } else {
+            document.getElementById('span1').textContent = "";
+        }
 
-// save product
+        if (selectedCategory === "") {
+            document.getElementById('span2').textContent = "Please select a category.";
+            valid = false;
+        } else {
+            document.getElementById('span2').textContent = "";
+        }
 
-function getProductFormData() {
-    return {
-        name: document.getElementById('productName').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        quantity: document.getElementById('quantity').value.trim(),
-        price: document.getElementById('price').value.trim(),
-        sku: document.getElementById('suk').value.trim(),
-        category: document.getElementById('category').value
-    };
-}
+        if (productDescription === "") {
+            document.getElementById('span3').textContent = "Please enter a description.";
+            valid = false;
+        } else {
+            document.getElementById('span3').textContent = "";
+        }
 
-// validate product form data
+        if (productQuantity === "" || productQuantity <= 0) {
+            document.getElementById('span4').textContent = "Please enter a valid quantity (minimum 1).";
+            valid = false;
+        } else {
+            document.getElementById('span4').textContent = "";
+        }
 
-function validateFormData({ name, description, quantity, price, sku, category }) {
-    let isValid = true;
+        if (productPrice === "" || productPrice <= 0) {
+            document.getElementById('span5').textContent = "Please enter a valid price.";
+            valid = false;
+        } else {
+            document.getElementById('span5').textContent = "";
+        }
 
-    if (!name) {
-        setError('span1', "Please enter the product name.");
-        isValid = false;
-    } else {
-        setError('span1', "");
-    }
+        if (productSKU === "") {
+            document.getElementById('span6').textContent = "Please enter a SKU number.";
+            valid = false;
+        } else {
+            document.getElementById('span6').textContent = "";
+        }
 
-    if (!category) {
-        setError('span2', "Please select a category.");
-        isValid = false;
-    } else {
-        setError('span2', "");
-    }
+        if (valid) {
+            saveProduct(productName, productDescription, productPrice, productSKU, selectedCategory, productQuantity);
+            productForm.reset();
+            window.location.href = "homePage.html";
+        }
+    });
+});
 
-    if (!description) {
-        setError('span3', "Please enter the product description.");
-        isValid = false;
-    } else {
-        setError('span3', "");
-    }
-
-    if (!quantity) {
-        setError('span4', "Please enter the product quantity.");
-        isValid = false;
-    } else {
-        setError('span4', "");
-    }
-
-    if (!price) {
-        setError('span5', "Please enter the product price.");
-        isValid = false;
-    } else {
-        setError('span5', "");
-    }
-
-    if (!sku) {
-        setError('span6', "Please enter the product SKU.");
-        isValid = false;
-    } else {
-        setError('span6', "");
-    }
-
-    return isValid;
-}
-
-// set error message
-
-function setError(elementId, message) {
-    document.getElementById(elementId).innerText = message;
-}
-
-// save product
-
-function saveProduct({ name, description, price, sku, category, quantity }) {
-    const products = JSON.parse(localStorage.getItem('products')) || [];
-    products.push({ name, description, price, sku, category, quantity });
+function saveProduct(name, description, price, sku, category, quantity) {
+    let products = JSON.parse(localStorage.getItem('products')) || [];
+    products.push({
+        name: name,
+        description: description,
+        price: price,
+        sku: sku,
+        quantity: quantity,
+        category: category
+    });
     localStorage.setItem('products', JSON.stringify(products));
 }
